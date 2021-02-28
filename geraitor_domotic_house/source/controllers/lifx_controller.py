@@ -1,4 +1,0 @@
-
-
-class LifxController:
-    pass

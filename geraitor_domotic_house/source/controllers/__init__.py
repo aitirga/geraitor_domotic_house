@@ -1,1 +1,2 @@
-from base_controller import BaseController
+from .BaseController import BaseController
+from .LifxController import LifxController

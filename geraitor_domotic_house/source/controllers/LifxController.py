@@ -1,0 +1,79 @@
+from .BaseController import BaseController
+from geraitor_domotic_house.source.lifx_lights import A19Light, ZStripLight
+import os
+import logging
+import requests
+import json
+logger = logging.getLogger(__file__)
+
+
+class LifxController(BaseController):
+    light_status_raw: dict
+    lights: dict = {}
+    def __init__(self, token=None):
+        super().__init__()
+        try:
+            self.token = token if token else os.environ["lifx_token"]
+        except:
+            logger.error("Please add the Lifx Lan token into the '.env' file in your root folder")
+        self.headers = {
+            "Authorization": "Bearer %s" % self.token,
+        }
+        self.light_status = {}
+        self.set_light_objects()
+
+
+    def set_light_objects(self):
+        self.get_lights()
+        for light in self.lights_status_raw:
+            if light['product']['identifier'] == "lifx_a19":
+                self.lights[light["label"]] = A19Light(token=self.token)
+            if light['product']['identifier'] == "lifx_z2":
+                self.lights[light["label"]] = ZStripLight(token=self.token)
+
+
+    def get_lights(self):
+        """
+        Get light status from lifx website
+        Returns:
+            Dictionary containing useful light info
+        """
+        self.lights_status_raw = json.loads(requests.get('https://api.lifx.com/v1/lights/all', headers=self.headers).content)
+        for light in self.lights_status_raw:
+            print(light)
+            self.light_status[light["label"]] = {
+                'color': light["color"],
+                'power': light['power'],
+                'brightness': light['brightness']
+            }
+            if light['product']['identifier'] == 'lifx_z2':
+                self.light_status[light['label']]["zones"] = light['zones']
+
+        return self.light_status
+
+    def set_light_color(self, color, light_name='all', filter=None, duration=1.0, power=None):
+        """
+        Sets the given light color on the lights
+        Args:
+            light_name: name of the light to which apply the constant color
+            group: group or filter to apply the given color to
+            duration: duration of the color change effect
+            power: set power status
+        """
+        _color_string = ""
+        for key in color:
+            _color_string += f"{key}:{color[key]}"
+
+        _data = {
+            "color": _color_string,
+            "duration": duration,
+        }
+        if power:
+            _data["power"] = power
+
+        if not filter:
+            send_string = f"https://api.lifx.com/v1/lights/{light_name}/state"
+        else:
+            send_string = f"https://api.lifx.com/v1/lights/{light_name}:{filter}/state"
+
+        response = requests.put(send_string, data=_data, headers=self.headers)
