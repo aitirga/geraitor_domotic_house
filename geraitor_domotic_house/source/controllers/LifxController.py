@@ -1,15 +1,16 @@
 from .BaseController import BaseController
-from geraitor_domotic_house.source.lifx_lights import A19Light, ZStripLight
+from geraitor_domotic_house.source.lifx_lights import A19Light, ZStripLight, BaseLight
 import os
 import logging
 import requests
 import json
 logger = logging.getLogger(__file__)
+from typing import Dict
 
 
 class LifxController(BaseController):
     light_status_raw: dict
-    lights: dict = {}
+    lights: Dict[str, BaseLight] = {}
     def __init__(self, token=None):
         super().__init__()
         try:
@@ -22,14 +23,14 @@ class LifxController(BaseController):
         self.light_status = {}
         self.set_light_objects()
 
-
     def set_light_objects(self):
         self.get_lights()
         for light in self.lights_status_raw:
             if light['product']['identifier'] == "lifx_a19":
-                self.lights[light["label"]] = A19Light(token=self.token)
+                self.lights[light["label"]] = A19Light(token=self.token, name=light['label'], id=light['id'])
             if light['product']['identifier'] == "lifx_z2":
-                self.lights[light["label"]] = ZStripLight(token=self.token)
+                self.lights[light["label"]] = ZStripLight(token=self.token, name=light['label'], id=light['id'])
+
 
 
     def get_lights(self):
@@ -77,3 +78,12 @@ class LifxController(BaseController):
             send_string = f"https://api.lifx.com/v1/lights/{light_name}:{filter}/state"
 
         response = requests.put(send_string, data=_data, headers=self.headers)
+
+    def set_state(self, default_dict=None):
+        _data = {}
+        _data["states"] = []
+        for light in self.lights.values():
+            if light.state_to_be_set:
+                _data["states"].append(light.state)
+                light.state_to_be_set = False
+        response = requests.put('https://api.lifx.com/v1/lights/states', data=json.dumps(_data), headers=self.headers)
