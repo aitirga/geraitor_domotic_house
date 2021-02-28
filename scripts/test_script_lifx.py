@@ -1,0 +1,1 @@
+from geraitor_domotic_house.config import config
