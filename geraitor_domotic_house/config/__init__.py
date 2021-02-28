@@ -29,7 +29,10 @@ except IndexError:
         f"Local configuration file was not provided, using default local_config.yml instead (located at {get_config_path() / 'local_config.yml'}")
 with open(local_configuration_file.absolute(), "r") as yml_file:
     local_yaml_file = yaml.safe_load(yml_file)
-    config = Box(local_yaml_file, default_box=True)
+    try:
+        config = Box(local_yaml_file, default_box=True)
+    except:
+        config =Box({}, default_box=True)
 
 # Add global configuration
 if not config.globals.is_globals_loaded:
