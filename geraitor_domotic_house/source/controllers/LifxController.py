@@ -87,7 +87,7 @@ class LifxController(BaseController):
                 _data["states"].append(light.state)
                 light.state_to_be_set = False
         response = requests.put('https://api.lifx.com/v1/lights/states', data=json.dumps(_data), headers=self.headers)
-        return response.content
+        return json.loads(response.content)
 
     def identify_scene(self):
         self.get_lights()
@@ -106,8 +106,23 @@ class LifxController(BaseController):
             logger.debug(f"Scene {found_scene} is currently running at home")
             return self.current_scene
 
-    # def set_scene(self):
-    #
     def list_scenes(self):
         response = requests.get('https://api.lifx.com/v1/scenes', headers=self.headers)
         return json.loads(response.content)
+
+    def set_scene(self, scene, **kwargs):
+        scene_list = self.list_scenes()
+        scene_uuid = None
+        data = {}
+        for kwarg in kwargs:
+            data[kwarg] = kwargs[kwarg]
+        for lifx_scene in scene_list:
+            if lifx_scene["name"] == scene:
+                scene_uuid = lifx_scene["uuid"]
+        if scene_uuid:
+            logger.info(f"Setting scene {scene}")
+            response = requests.put('https://api.lifx.com/v1/scenes/scene_id:%s/activate' % scene_uuid, headers=self.headers, data=data)
+            if not "fast" in data:
+                return json.loads(response.content)
+        else:
+            logger.warning(f"The specified scene could not be found on Lifx scenes, unexpected behaviour could happen")

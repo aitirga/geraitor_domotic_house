@@ -6,7 +6,6 @@ from nanoleafapi import discovery, Nanoleaf
 
 def main():
     home_controller = HomeController()
-
     home_controller.run()
 
 

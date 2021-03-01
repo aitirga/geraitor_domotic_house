@@ -40,11 +40,11 @@ class HomeController(BaseController):
     def pastel_scene(self):
         self.lifx_controller.set_light_objects()
         while 1:
-            self.lifx_controller.lights["Lampara"].set_color_state(color={"brightness": 1.0})
+            self.lifx_controller.lights["Aire"].set_color_state(color={"brightness": 1.0})
             self.lifx_controller.set_state()
             time.sleep(3)
 
-            self.lifx_controller.lights["Lampara"].set_color_state(color={"brightness": 0.1})
+            self.lifx_controller.lights["Aire"].set_color_state(color={"brightness": 0.1})
             self.lifx_controller.set_state()
             time.sleep(3)
 
@@ -61,16 +61,15 @@ class HomeController(BaseController):
         while self.is_running:
             if current_scene != self.nanoleaf_controller.get_scene():
                 scene_thread.event.set()
-                config.globals.stop_thread = True
                 change_scene = True
                 current_scene = self.nanoleaf_controller.get_scene()
             if current_scene and change_scene:
                 change_scene = False
-                if current_scene.lower() == "estelar":
+                if current_scene == "Estelar":
                     logger.info(f"Customized {current_scene} scene has been set")
                     scene_thread = EstelarScene(lifx_controller=self.lifx_controller, nanoleaf_controller=self.nanoleaf_controller)
                     scene_thread.start()
-                elif current_scene.lower() == "pastel":
+                elif current_scene == "Pastel":
                     logger.info(f"Customized {current_scene} scene has been set")
                     scene_thread = PastelScene(lifx_controller=self.lifx_controller, nanoleaf_controller=self.nanoleaf_controller)
                     scene_thread.start()
