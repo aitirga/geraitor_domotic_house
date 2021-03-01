@@ -1,1 +1,13 @@
-ff: a
+scenes:
+  Pastel:
+    Lampara:
+      hue: 327.99
+      saturation: 0.23
+  Sabana:
+    Luna:
+      hue: 40
+      saturation: 0.94
+  Estelar:
+    Lampara:
+      hue: 194
+      saturation: 0.88

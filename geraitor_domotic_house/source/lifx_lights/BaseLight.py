@@ -49,8 +49,17 @@ class BaseLight:
 
         response = requests.put(send_string, data=_data, headers=self.headers)
 
-    def set_color_state(self, color, duration=1.0, power=None):
+    def set_color_state(self, color, brightness=None, power="on", time=None, **kwargs):
         self.state["selector"] = f"id:{self.id}"
-        for key in color:
-            self.state[key] = color[key]
+        for kwarg in kwargs:
+            self.state[kwarg] = kwargs[kwarg]
+        if color:
+            color_string = ""
+            for key in color:
+                if not color[key]:
+                    color_string += f"{key} "
+                    continue
+                color_string += f"{key}:{color[key]} "
+        self.state["color"] = color_string[:-1]
+        self.state["power"] = power
         self.state_to_be_set = True

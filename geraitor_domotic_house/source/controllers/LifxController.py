@@ -1,5 +1,6 @@
 from .BaseController import BaseController
 from geraitor_domotic_house.source.lifx_lights import A19Light, ZStripLight, BaseLight
+from geraitor_domotic_house.config import config
 import os
 import logging
 import requests
@@ -23,6 +24,7 @@ class LifxController(BaseController):
         self.light_status = {}
         self.set_light_objects()
 
+
     def set_light_objects(self):
         self.get_lights()
         for light in self.lights_status_raw:
@@ -30,8 +32,6 @@ class LifxController(BaseController):
                 self.lights[light["label"]] = A19Light(token=self.token, name=light['label'], id=light['id'])
             if light['product']['identifier'] == "lifx_z2":
                 self.lights[light["label"]] = ZStripLight(token=self.token, name=light['label'], id=light['id'])
-
-
 
     def get_lights(self):
         """
@@ -41,7 +41,6 @@ class LifxController(BaseController):
         """
         self.lights_status_raw = json.loads(requests.get('https://api.lifx.com/v1/lights/all', headers=self.headers).content)
         for light in self.lights_status_raw:
-            print(light)
             self.light_status[light["label"]] = {
                 'color': light["color"],
                 'power': light['power'],
@@ -87,3 +86,21 @@ class LifxController(BaseController):
                 _data["states"].append(light.state)
                 light.state_to_be_set = False
         response = requests.put('https://api.lifx.com/v1/lights/states', data=json.dumps(_data), headers=self.headers)
+        return response.content
+
+    def identify_scene(self):
+        self.get_lights()
+        # Try to match the condition found on the config file
+        found_scene = None
+        for scene in config.scenes:
+            lights = config.scenes[scene]
+            for light in lights:
+                for constrain in lights[light]:
+                    if not self.light_status[light]["color"][constrain] == lights[light][constrain]:
+                        self.current_scene = None
+                        break
+                    found_scene = scene
+        if found_scene:
+            self.current_scene = found_scene
+            logger.debug(f"Scene {found_scene} is currently running at home")
+            return self.current_scene

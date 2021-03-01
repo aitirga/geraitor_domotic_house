@@ -1,26 +1,28 @@
 from geraitor_domotic_house.config import config
-from geraitor_domotic_house.source.controllers import LifxController
+from geraitor_domotic_house.source.controllers import LifxController, HomeController
 import time
+from nanoleafapi import discovery, Nanoleaf
+
+def estelar_scene():
+    pass
 
 
 def main():
-    lifx_controller = LifxController()
 
-    for light in lifx_controller.lights.values():
-        light.set_color_state(color={"brightness": 1.0}, power="on")
-    lifx_controller.set_state()
+    test_nanoleaf = Nanoleaf(ip="192.168.1.155")
+    print(test_nanoleaf.create_auth_token())
 
-    for light in lifx_controller.lights.values():
-        light.set_color_state(color={"brightness": 0.25}, power="on")
-    lifx_controller.set_state()
+    # home_controller = HomeController()
+    # home_controller.run()
 
-    for light in lifx_controller.lights.values():
-        light.set_color_state(color={"brightness": 0.75}, power="on")
-    lifx_controller.set_state()
 
-    for light in lifx_controller.lights.values():
-        light.set_color_state(color={"brightness": 0.1}, power="on")
-    lifx_controller.set_state()
+    # lifx_controller = LifxController()
+    #
+    # # while 1:
+    # #     lifx_controller.identify_scene()
+    #
+    # lifx_controller.lights["Luna"].set_color_state(color={"red": None, "saturation": 0.1, "brightness": 1.0}, duration=3, fast=True)
+    # lifx_controller.set_state()
 
 
 if __name__ == '__main__':
