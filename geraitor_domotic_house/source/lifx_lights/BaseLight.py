@@ -50,6 +50,15 @@ class BaseLight:
         response = requests.put(send_string, data=_data, headers=self.headers)
 
     def set_color_state(self, color, brightness=None, power="on", time=None, **kwargs):
+        """
+        Sets a given color state into a light
+        Args:
+            color: dictionary containing color options
+            brightness: float value between [0.0, 1.0] specifying the brightness
+            power: Switch the
+            time: Duration of the effect
+            **kwargs: Other arguments
+        """
         self.state["selector"] = f"id:{self.id}"
         for kwarg in kwargs:
             self.state[kwarg] = kwargs[kwarg]

@@ -11,3 +11,13 @@ scenes:
     Lampara:
       hue: 194
       saturation: 0.88
+
+
+dynamic_scenes:
+  Estelar:
+    starfall_probability: 0.01
+    starfall_duration: 5.0
+    mean_starfall_wait: 5.0
+    starfall_light:
+      saturation: 0.1
+#      kelvin: 2200

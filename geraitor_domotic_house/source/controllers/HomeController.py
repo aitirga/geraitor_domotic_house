@@ -9,11 +9,12 @@ import time
 import ctypes
 from .NanoleafController import NanoleafController
 import sys
+import importlib
 
 logger = logging.getLogger(__file__)
 import multiprocessing
 from signal import signal, SIGTERM
-from geraitor_domotic_house.source.scenes import EstelarScene, PastelScene, BaseScene
+from geraitor_domotic_house.source.scenes import BaseScene
 
 
 
@@ -65,74 +66,13 @@ class HomeController(BaseController):
                 current_scene = self.nanoleaf_controller.get_scene()
             if current_scene and change_scene:
                 change_scene = False
-                if current_scene == "Estelar":
+                try:
+                    SceneClass = getattr(importlib.import_module("geraitor_domotic_house.source.scenes"),
+                                                                    f"{current_scene}Scene")
+                    scene_thread: BaseScene = SceneClass(lifx_controller=self.lifx_controller,
+                                              nanoleaf_controller=self.nanoleaf_controller,
+                                              )
                     logger.info(f"Customized {current_scene} scene has been set")
-                    scene_thread = EstelarScene(lifx_controller=self.lifx_controller, nanoleaf_controller=self.nanoleaf_controller)
                     scene_thread.start()
-                elif current_scene == "Pastel":
-                    logger.info(f"Customized {current_scene} scene has been set")
-                    scene_thread = PastelScene(lifx_controller=self.lifx_controller, nanoleaf_controller=self.nanoleaf_controller)
-                    scene_thread.start()
-                else:
-                    logger.warning(f"Scene {current_scene} is running with default settings")
-
-                # method_to_run = f"{current_scene}_scene".lower()
-                # if hasattr(self, method_to_run):
-                #     logger.info(f"Customized {current_scene} scene has been set")
-                #     config.globals.stop_thread = False
-                #     # scene_process = threading.Thread(target=EstelarScene().run, args=(self.lifx_controller,))
-                #     # scene_process.start()
-                #     if
-                #     scene_thread = EstelarScene(lifx_controller=self.lifx_controller)
-                #     scene_thread.start()
-                # else:
-                #     logger.warning(f"Scene {current_scene} is running with default settings")
-
-
-
-
-# class EstelarScene(threading.Thread):
-#     def __init__(self, lifx_controller):
-#         threading.Thread.__init__(self)
-#         self.event = threading.Event()
-#         self.lifx_controller = lifx_controller
-#
-#     def run(self):
-#         self.lifx_controller.set_light_objects()
-#         print("running")
-#         while not self.event.is_set():
-#             self.lifx_controller.lights["Luna"].set_color_state(color={"brightness": 1.0})
-#             self.lifx_controller.set_state()
-#             self.event.wait(3)
-#
-#             self.lifx_controller.lights["Luna"].set_color_state(color={"brightness": 0.1})
-#             self.lifx_controller.set_state()
-#             self.event.wait(3)
-#         print("stopping")
-#
-#     def before_exit(self):
-#         print("Before exit")
-#         sys.exit()
-#
-#
-# class PastelScene(threading.Thread):
-#     def __init__(self, lifx_controller):
-#         threading.Thread.__init__(self)
-#         self.event = threading.Event()
-#         self.lifx_controller = lifx_controller
-#
-#     def run(self):
-#         self.lifx_controller.set_light_objects()
-#         print("running")
-#         while not self.event.is_set():
-#             self.lifx_controller.lights["Lampara"].set_color_state(color={"brightness": 1.0})
-#             self.lifx_controller.set_state()
-#             self.event.wait(3)
-#
-#             self.lifx_controller.lights["Lampara"].set_color_state(color={"brightness": 0.1})
-#             self.lifx_controller.set_state()
-#             self.event.wait(3)
-#         self.before_exit()
-#
-#     def before_exit(self):
-#         sys.exit()
+                except:
+                    logger.warning(f"Default {current_scene} scene has been set")
