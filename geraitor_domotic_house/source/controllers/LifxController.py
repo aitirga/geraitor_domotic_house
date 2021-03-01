@@ -23,6 +23,7 @@ class LifxController(BaseController):
         }
         self.light_status = {}
         self.set_light_objects()
+        logger.info("Lifx controller has been properly set-up")
 
 
     def set_light_objects(self):
@@ -104,3 +105,9 @@ class LifxController(BaseController):
             self.current_scene = found_scene
             logger.debug(f"Scene {found_scene} is currently running at home")
             return self.current_scene
+
+    # def set_scene(self):
+    #
+    def list_scenes(self):
+        response = requests.get('https://api.lifx.com/v1/scenes', headers=self.headers)
+        return json.loads(response.content)
